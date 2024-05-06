@@ -1,13 +1,9 @@
-def parse_input(user_input):
-    cmd, *args = user_input.split()
-    cmd = cmd.strip().lower()
-    return cmd, args
+from typing import Callable, Dict
 
 def input_error(func):
-    def inner(cmd, args):
-
+    def inner(cmd, *args):
         try:
-            return func(cmd, args)
+            return func(cmd, *args)
         except IndexError:
             return print("Enter the argument for the command")
         except KeyError:
@@ -17,60 +13,56 @@ def input_error(func):
     return inner
 
 @input_error
+def parse_input(user_input):
+    cmd, *args = user_input.split()
+    cmd = cmd.strip().lower()
+    return cmd, args
+
+def hello(args, contacts):
+    return "How can I help you?"
+
 def add_contact(args, contacts):
     name, phone = args
     contacts[name] = phone
     return "Contact added."
 
-@input_error
 def change_contact(args, contacts):
     name, phone = args
-    if name in contacts:
-        contacts[name] = phone
-        return "Contact updated."
-    else:
-        return "Contact not found."
+    contacts[name] = phone
+    return "Contact updated"
 
-@input_error
 def show_phone(args, contacts):
     name = args[0]
-    if name in contacts:
-        return contacts[name]
-    else:
-        return "Contact not found."
+    return contacts[name]
 
-@input_error
-def show_all(contacts):
-    if contacts:
-        result = ""
-        for name, phone in contacts.items():
-            result += f"{name}: {phone}\n"
-        return result
-    else:
-        return "No contacts found."
+def show_all(args, contacts):
+    for name, phone in contacts.items():
+        return f"{name}: phone {phone}"
+
+operations: Dict[str, Callable] = {
+    "hello": input_error(hello),
+    "add": input_error(add_contact),
+    "change": input_error(change_contact),
+    "show": input_error(show_phone),
+    "all": input_error(show_all)
+}
 
 def main():
     contacts = {}
     print("Welcome to the assistant bot!")
     while True:
-        user_input = input("Enter command: ")
+        user_input = input("Enter a command: ")
         cmd, args = parse_input(user_input)
-        if cmd == "hello":
-            print("How can I help you?")
-        elif cmd == "add" :
-            print(add_contact(args, contacts))
-        elif cmd == "change" :
-            print(change_contact(args, contacts))
-        elif cmd == "phone" :
-            print(show_phone(args, contacts))
-        elif cmd == "all" :
-            print(show_all(contacts))
-        elif cmd in ["close", 'exit']:
+        if cmd in ["close", "exit"]:
             print("Good bye!")
             break
+        elif cmd in operations:
+            result = operations[cmd](args, contacts)
+            print(result)
+        else:
+            print("Invalid command")
 
 if __name__ == "__main__":
     main()
-
 
 
