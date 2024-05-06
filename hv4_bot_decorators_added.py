@@ -27,6 +27,8 @@ def add_contact(args, contacts):
 
 def change_contact(args, contacts):
     name, phone = args
+    if name not in contacts:
+        raise KeyError
     contacts[name] = phone
     return "Contact updated"
 
@@ -36,7 +38,7 @@ def show_phone(args, contacts):
 
 def show_all(args, contacts):
     for name, phone in contacts.items():
-        return f"{name}: phone {phone}"
+        return f"{name}: phone: {phone}"
 
 operations: Dict[str, Callable] = {
     "hello": input_error(hello),
